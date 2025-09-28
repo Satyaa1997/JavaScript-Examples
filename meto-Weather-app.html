@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css">
+<link rel="stylesheet" href="./node_modules/bootstrap-icons/font/bootstrap-icons.css">
+<title>Document</title>
+<style>
+    .weather-content{
+        height: 400px;
+        width: 400px;
+        border: 2px solid black;
+        background-image: url("./src/img/weather2.jpg");
+        background-size: cover;
+    }
+</style>
+<script>
+    function SearchClick() {
+        document.getElementById("detailContainer").style.display = "block";
+
+        var cityName = document.getElementById("txtCity").value;
+
+        // Step 1: First get latitude and longitude from city name
+        var geo_url = `https://geocoding-api.open-meteo.com/v1/search?name=${cityName}`;
+
+        fetch(geo_url)
+            .then(response => response.json())
+            .then(geoData => {
+                if (!geoData.results || geoData.results.length === 0) {
+                    alert("City not found!");
+                    return;
+                }
+
+                let latitude = geoData.results[0].latitude;
+                let longitude = geoData.results[0].longitude;
+
+        
+                var api_url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+
+                fetch(api_url)
+                    .then(response => response.json())
+                    .then(data => {
+                        let weather = data.current_weather;
+
+                        document.getElementById("lblCity").innerHTML = geoData.results[0].name;
+                        document.getElementById("lblTemp").innerHTML = weather.temperature.toFixed(0) + "&deg;C";
+                        document.getElementById("lblWind").innerHTML = weather.windspeed + " KMPH";
+                        document.getElementById("lblHaze").innerHTML = "Code: " + weather.weathercode;
+                        
+                       
+                    });
+            });
+    }
+</script>
+
+</head>
+<body class="container-fluid d-flex justify-content-center align-items-center">
+    <div>
+        <div class="weather-content mt-4 rounded-3">
+           <div class="noshade p-4">
+             <div>
+                <div class="input-group">
+                 <input type="text" placeholder="your city name" class=" w-50 form-control" id="txtCity">
+                 <button onclick="SearchClick()" class="bi bi-search btn btn-warning"></button>
+                </div>
+             </div>
+             <div id="detailContainer" class="mt-4 text-white" style="display: none;">
+                <div id="lblCity" class="my-4 fs-3 fw-bold"></div>
+                <div>
+                    <span class="bi bi-cloud-haze-fill fs-1"></span>
+                    <span id="lblTemp" class="fs-1 fw-bold"></span>
+                </div>
+                <div id="lblHaze" class="d-inline">
+
+                </div>
+                <span id="lblWind"></span>
+               
+             </div>
+           </div>
+        </div>
+    </div>
+</body>
+</html>
